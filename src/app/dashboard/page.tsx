@@ -21,7 +21,7 @@ export default async function DashboardPage({
   const [year, month, day] = dateStr.split("-").map(Number);
   const date = new Date(year, month - 1, day);
 
-  const workouts = await getWorkoutsForUserOnDate(user!.username, date);
+  const workouts = await getWorkoutsForUserOnDate(user!.username ?? "", date);
 
   const displayName = user?.fullName ?? user?.username ?? "there";
   const email = user?.primaryEmailAddress?.emailAddress;
