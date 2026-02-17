@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getWorkoutsForUserOnDate } from "@/data/workouts";
-import { WorkoutDatePicker } from "./WorkoutDatePicker";
+import { WorkoutDatePicker } from "./WorkoutDatePickerClient";
 
 export default async function DashboardPage({
   searchParams,
@@ -44,7 +44,7 @@ export default async function DashboardPage({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-muted-foreground">
-                  {format(workout.date, "do MMM yyyy")}
+                  {format(parseISO(workout.date), "do MMM yyyy")}
                 </p>
               </CardContent>
             </Card>

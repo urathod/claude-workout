@@ -5,9 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## IMPORTANT: Documentation First
 
 ## Code Generation Guidelines
-**IMPORTANT: Before generating any code, Claude Code MUST first check the `/docs` directory for relevant documentation.** Always read applicable docs files before writing or modifying code to ensure alignment with project conventions, design decisions, and specifications defined there.
+**IMPORTANT: Before generating any code, Claude Code MUST first check the `/docs` directory for relevant documentation.** Always read applicable docs files before writing or modifying code to ensure alignment with project conventions, design decisions, and specifications defined there:
 
 - /docs/ui.md
+- /docs/data-fetching.md
+
 
 ## Commands
 
