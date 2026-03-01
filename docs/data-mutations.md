@@ -131,11 +131,71 @@ export async function createWorkoutForUser(
 
 ---
 
+## Database Layer: Drizzle ORM
+
+**ALL database interactions MUST use Drizzle ORM for type-safe database access.** Do NOT use raw SQL, Prisma, Knex, or any other ORM/query builder.
+
+### Type-Safe Queries and Mutations
+
+Use Drizzle's schema-inferred types for full type safety across inserts, selects, updates, and deletes:
+
+```ts
+// data/workouts.ts
+import { db } from "@/db";
+import { workouts } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+
+// Use schema-inferred types for type-safe row data
+type Workout = typeof workouts.$inferSelect;
+type NewWorkout = typeof workouts.$inferInsert;
+
+export async function createWorkoutForUser(
+  userId: string,
+  name: string,
+  date: Date
+): Promise<Workout> {
+  const [workout] = await db
+    .insert(workouts)
+    .values({ userId, name, date })
+    .returning();
+  return workout;
+}
+
+export async function updateWorkoutForUser(
+  userId: string,
+  workoutId: number,
+  data: Partial<Pick<NewWorkout, "name" | "date">>
+) {
+  return db
+    .update(workouts)
+    .set(data)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+}
+
+export async function deleteWorkoutForUser(userId: string, workoutId: number) {
+  return db
+    .delete(workouts)
+    .where(and(eq(workouts.id, workoutId), eq(workouts.userId, userId)));
+}
+```
+
+### Rules
+
+- **Always** use Drizzle ORM — never raw SQL, Prisma, Knex, or other query tools
+- **Always** use `$inferSelect` and `$inferInsert` from the schema for row types — do NOT manually define types that mirror table columns
+- **Always** use Drizzle's query builder methods (`select`, `insert`, `update`, `delete`) — never string-interpolated queries
+- **Always** use Drizzle's operator functions (`eq`, `and`, `or`, `gt`, etc.) for where clauses — never raw conditions
+- **Always** scope every mutation by the authenticated `userId`
+- **Never** pass the `db` instance or query builders to client components
+- **Schema** lives in `@/db/schema` — do NOT duplicate table definitions
+
+---
+
 ## Authorization: Users Must Only Mutate Their Own Data
 
 This is a hard security requirement.
 
-- Every helper function in `src/data/` **must** scope its mutation to the authenticated user's ID
+- Every helper function in `src/data/` **MUST** scope its mutation to the authenticated user's ID
 - Never trust a `userId` passed from the client — always derive it from the server-side session inside the server action
 - The server action is responsible for retrieving the session and passing the authenticated `userId` to the `/data` helper
 
@@ -150,6 +210,9 @@ This is a hard security requirement.
 | File directive | `"use server";` at the top |
 | Parameter types | Explicit TypeScript types — never `FormData` |
 | Argument validation | Zod schema validation required on all actions |
-| Database access | Drizzle ORM via `src/data/` helpers — never raw SQL |
+| Database ORM | Drizzle ORM only — no raw SQL, Prisma, Knex, or other ORMs |
+| Database types | `$inferSelect` / `$inferInsert` from schema — no manual type duplication |
+| Database queries | Drizzle query builder + operator functions only |
+| Database access | Via `src/data/` helpers — never directly in actions or components |
 | Authorization | Always scope mutations to authenticated `userId` from session |
 | Direct DB calls in actions | Never — always use `src/data/` helpers |

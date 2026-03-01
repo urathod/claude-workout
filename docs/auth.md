@@ -294,6 +294,59 @@ export async function POST(request: Request) {
 
 ---
 
+## Database Layer: Drizzle ORM
+
+**All database interactions in authenticated contexts MUST use Drizzle ORM for type-safe queries and mutations.** Do NOT write raw SQL or use any other ORM/query builder.
+
+### Auth + Database Flow
+
+After verifying the user with Clerk, pass the authenticated identity to `/data` helper functions that use Drizzle:
+
+```ts
+// Server Component
+import { currentUser } from "@clerk/nextjs/server";
+import { getWorkoutsForUser } from "@/data/workouts";
+
+export default async function Page() {
+  const user = await currentUser();
+  if (!user) return <AuthButtons />;
+
+  // Drizzle-powered query scoped to authenticated user
+  const workouts = await getWorkoutsForUser(user.id);
+}
+```
+
+```ts
+// data/workouts.ts
+import { db } from "@/db";
+import { workouts } from "@/db/schema";
+import { eq, and } from "drizzle-orm";
+
+export async function getWorkoutsForUser(userId: string) {
+  return db.select().from(workouts).where(eq(workouts.userId, userId));
+}
+
+export async function createWorkoutForUser(userId: string, name: string, date: Date) {
+  return db.insert(workouts).values({ userId, name, date });
+}
+
+export async function deleteWorkoutForUser(userId: string, workoutId: number) {
+  return db.delete(workouts).where(
+    and(eq(workouts.id, workoutId), eq(workouts.userId, userId))
+  );
+}
+```
+
+### Rules
+
+- **Always** use Drizzle ORM — never raw SQL, Prisma, Knex, or other query tools
+- **Always** scope queries and mutations by the authenticated `userId`
+- **Never** pass Drizzle query builders or the `db` instance to client components
+- **Schema types** come from `@/db/schema` — do NOT duplicate or manually define table types
+- Use Drizzle's inferred types (`typeof workouts.$inferSelect`, `typeof workouts.$inferInsert`) for type-safe row data when needed
+
+---
+
 ## Environment Variables
 
 Clerk requires the following environment variables (stored in `.env.local`, never committed):
@@ -321,5 +374,7 @@ Do NOT hardcode these values. Do NOT commit `.env.local` to version control.
 | API route auth | `auth()` + return `401` if unauthenticated |
 | API routes for data fetching | Never — use Server Components |
 | Webhook verification | Svix signature verification, not `auth()` |
+| Database layer | Drizzle ORM only — no raw SQL or other ORMs |
+| DB query scoping | Always filter by authenticated `userId` |
 | Auth middleware | `clerkMiddleware()` in `src/middleware.ts` |
 | Environment variables | `.env.local` only, never committed |
