@@ -2,7 +2,7 @@
 
 ## CRITICAL: Server Components Only
 
-**ALL data fetching in this app MUST be done exclusively via React Server Components.**
+**CRITICAL: ALL data fetching in this app MUST be done exclusively via React Server Components.**
 
 - Do NOT fetch data in route handlers (`/app/api/`)
 - Do NOT fetch data in client components (`"use client"`)
@@ -19,9 +19,9 @@ All database queries must live in helper functions under the `/data` directory.
 
 ### Rules
 
-- Every database query **must** be a named helper function in `/data`
-- Helper functions **must** use **Drizzle ORM** — do NOT write raw SQL
-- Helper functions **must** accept a `userId` (or equivalent authenticated identity) and filter all queries by it
+- Every database query **MUST** be a named helper function in `/data`
+- Helper functions **MUST** use **Drizzle ORM** — do NOT write raw SQL
+- Helper functions **MUST** accept a `userId` (or equivalent authenticated identity) and filter all queries by it
 - Never expose a query that can return another user's data
 
 ### Example Structure

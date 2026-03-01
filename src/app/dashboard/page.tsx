@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getWorkoutsForUserOnDate } from "@/data/workouts";
 import { WorkoutDatePicker } from "./WorkoutDatePickerClient";
+import { AuthButtons } from "./AuthButtonsClient";
 
 export default async function DashboardPage({
   searchParams,
@@ -11,6 +12,19 @@ export default async function DashboardPage({
   searchParams: Promise<{ date?: string }>;
 }) {
   const user = await currentUser();
+
+  if (!user) {
+    return (
+      <main className="max-w-md mx-auto px-4 py-24 text-center space-y-4">
+        <h1 className="text-2xl font-semibold">You are not signed in</h1>
+        <p className="text-muted-foreground">
+          Please sign in or create an account to view your dashboard.
+        </p>
+        <AuthButtons />
+      </main>
+    );
+  }
+
   const { date: dateParam } = await searchParams;
 
   const today = new Date();
@@ -21,11 +35,11 @@ export default async function DashboardPage({
   const [year, month, day] = dateStr.split("-").map(Number);
   const date = new Date(year, month - 1, day);
 
-  const workouts = await getWorkoutsForUserOnDate(user!.username ?? "", date);
+  const workouts = await getWorkoutsForUserOnDate(user.username ?? "", date);
 
-  const displayName = user?.fullName ?? user?.username ?? "there";
-  const email = user?.primaryEmailAddress?.emailAddress;
-  const initials = [user?.firstName, user?.lastName]
+  const displayName = user.fullName ?? user.username ?? "there";
+  const email = user.primaryEmailAddress?.emailAddress;
+  const initials = [user.firstName, user.lastName]
     .filter(Boolean)
     .map((n) => n![0])
     .join("")
@@ -35,7 +49,7 @@ export default async function DashboardPage({
     <main className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       <div className="flex items-center gap-3">
         <Avatar>
-          <AvatarImage src={user?.imageUrl} alt={displayName} />
+          <AvatarImage src={user.imageUrl} alt={displayName} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
         <div>
