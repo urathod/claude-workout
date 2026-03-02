@@ -1,5 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { format } from "date-fns";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getWorkoutsForUserOnDate } from "@/data/workouts";
@@ -35,7 +38,7 @@ export default async function DashboardPage({
   const [year, month, day] = dateStr.split("-").map(Number);
   const date = new Date(year, month - 1, day);
 
-  const workouts = await getWorkoutsForUserOnDate(user.username ?? "", date);
+  const workouts = await getWorkoutsForUserOnDate(user.id, date);
 
   const displayName = user.fullName ?? user.username ?? "there";
   const email = user.primaryEmailAddress?.emailAddress;
@@ -60,7 +63,15 @@ export default async function DashboardPage({
 
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">Workouts</h2>
-        <WorkoutDatePicker dateStr={dateStr} />
+        <div className="flex items-center gap-2">
+          <WorkoutDatePicker dateStr={dateStr} />
+          <Button asChild size="sm">
+            <Link href="/dashboard/workout/new">
+              <Plus className="mr-1 h-4 w-4" />
+              Log New Workout
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-3">
