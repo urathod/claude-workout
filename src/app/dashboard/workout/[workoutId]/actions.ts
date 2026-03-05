@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { currentUser } from "@clerk/nextjs/server";
-import { createWorkoutWithExercises } from "@/data/workouts";
+import { updateWorkoutWithExercises } from "@/data/workouts";
 import { redirect } from "next/navigation";
 
 
@@ -19,7 +19,7 @@ const exerciseEntrySchema = z.object({
   sets: z.array(setSchema),
 });
 
-const createWorkoutSchema = z.object({
+const updateWorkoutSchema = z.object({
   name: z.string().optional(),
   date: z.coerce.date(),
   notes: z.string().optional(),
@@ -27,17 +27,18 @@ const createWorkoutSchema = z.object({
   exercises: z.array(exerciseEntrySchema),
 });
 
-export type CreateWorkoutInput = z.infer<typeof createWorkoutSchema>;
+export type UpdateWorkoutInput = z.infer<typeof updateWorkoutSchema>;
 
-export async function createWorkout(
-  input: CreateWorkoutInput
+export async function updateWorkout(
+  workoutId: string,
+  input: UpdateWorkoutInput
 ): Promise<{ error: string } | never> {
   const user = await currentUser();
   if (!user?.id) {
-    return { error: "You must be signed in to create a workout." };
+    return { error: "You must be signed in to update a workout." };
   }
 
-  const parsed = createWorkoutSchema.safeParse(input);
+  const parsed = updateWorkoutSchema.safeParse(input);
   if (!parsed.success) {
     return { error: parsed.error.issues[0].message };
   }
@@ -53,7 +54,7 @@ export async function createWorkout(
 
   let workout;
   try {
-    workout = await createWorkoutWithExercises(user.id, {
+    workout = await updateWorkoutWithExercises(user.id, workoutId, {
       name: name || undefined,
       date,
       notes: notes || undefined,
@@ -62,7 +63,7 @@ export async function createWorkout(
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";
-    return { error: `Failed to create workout: ${message}` };
+    return { error: `Failed to update workout: ${message}` };
   }
 
   const y = workout.date.getUTCFullYear();

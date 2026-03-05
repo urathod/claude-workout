@@ -81,18 +81,20 @@ export default async function DashboardPage({
           </p>
         ) : (
           workouts.map((workout) => (
-            <Card key={workout.id}>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  {workout.name ?? "Untitled Workout"}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  {format(workout.date, "do MMM yyyy")}
-                </p>
-              </CardContent>
-            </Card>
+            <Link key={workout.id} href={`/dashboard/workout/${workout.id}`}>
+              <Card className="transition-colors hover:bg-muted/50">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">
+                    {workout.name ?? "Untitled Workout"}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground">
+                    {format(workout.date, "do MMM yyyy")}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           ))
         )}
       </div>
