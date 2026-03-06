@@ -58,7 +58,7 @@ export default async function DashboardPage({
         <div>
           <p className="font-semibold">Welcome back, {displayName}</p>
           {email && <p className="text-sm text-muted-foreground">{email}</p>}
-ß        </div>
+        </div>
       </div>
 
       <div className="flex items-center justify-between">
